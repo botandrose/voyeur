@@ -1,0 +1,6 @@
+victims: 
+  - http://google.com/
+  - http://yahoo.com/
+
+notification_recipients:
+  - notification@email.com

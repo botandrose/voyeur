@@ -1,28 +1,26 @@
+require 'yaml'
 require 'net/http'
+require 'net/https'
 require 'net/smtp'
 require 'uri'
 
 class Voyeur < Thor
-  @@hostnames = %W(
-    domaineselections.com
-    botandrose.com
-    portlandwinegear.com
-    graingerstudios.com
-  )
-  @@notification_recipients = %W(
-    originofstorms@gmail.com
-  )
+  config = YAML.load_file 'config.yml'
+
+  @@hostnames = config["victims"]
+  @@notification_recipients = config["notification_recipients"]
   
   desc "peep", "peep at all hosts"
+  method_options :verbose => :boolean
   def peep
     @@hostnames.each do |h|
       host = Host.new h
-      puts "peeping #{h}..."
+      puts "peeping #{h}..." if options.verbose?
       if host.down?
-        puts "  DOWN! sending notification."
+        puts "  DOWN! sending notification." if options.verbose?
         notify host
       else
-        puts "  success."
+        puts "  success." if options.verbose?
       end
     end
   end
@@ -63,17 +61,28 @@ class Host
   
   def down?
     begin
-      res = Net::HTTP.get_response uri
-      not res.code.match /^2../
+      res = fetch name
     rescue Exception => e
       self.error = e
       return true
+    else
+      not res.code.match /^2../
     end
   end
   
   protected
   
-    def uri
-      URI.parse "http://#{name}"
+    def fetch(uri_str, limit = 10)
+      # You should choose better exception.
+      raise ArgumentError, 'HTTP redirect too deep' if limit == 0
+
+      response = Net::HTTP.get_response(URI.parse(uri_str))
+      case response
+      when Net::HTTPSuccess     then response
+      when Net::HTTPRedirection then fetch(response['location'], limit - 1)
+      else
+        response.error!
+      end
     end
+
 end
