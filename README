@@ -1,5 +1,8 @@
 DESCRIPTION
-Voyeur is a stupidly simple Thor task we use internally at BOTandROSE design to ensure our sites are up. It loops through a list of uris, GETs them, and emails us if the response is not 200. Meant to be cron'ed or something similar.
+Voyeur is a stupidly simple Thor task we use internally at BOTandROSE design to ensure our sites are up. It parses a YAML file for config, loops through a list of uris, GETs them, and emails us if the response is not 200. Meant to be cron'ed or something similar.
+
+SETUP
+copy the config.yml.example to config.yml and customize to your needs.
 
 USAGE
 thor voyeur:peek
