@@ -32,7 +32,7 @@ class Voyeur < Thor
   def notify(host)
     @@notification_recipients.each do |e|
       subject = "#{host.name} DOWN!"
-      message = ""
+      message = host.error
       send_email "voyeur@botandrose.com", "BOTandROSE Voyeur", e, '', subject, message
     end
   end
@@ -55,15 +55,20 @@ MAIL
 end
 
 class Host
-  attr_accessor :name
+  attr_accessor :name, :error
   
   def initialize(name)
     self.name = name
   end
   
   def down?
-   res = Net::HTTP.get_response uri
-   not res.code.match /^2../
+    begin
+      res = Net::HTTP.get_response uri
+      not res.code.match /^2../
+    rescue Exception => e
+      self.error = e
+      return true
+    end
   end
   
   protected
