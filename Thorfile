@@ -9,8 +9,8 @@ class Voyeur < Thor
     portlandwinegear.com
     graingerstudios.com
   )
-  @@notification_recipients = %(
-    micah@botandrose.com
+  @@notification_recipients = %W(
+    originofstorms@gmail.com
   )
   
   desc "peep", "peep at all hosts"
@@ -38,17 +38,18 @@ class Voyeur < Thor
   end
   
   def send_email(from, from_alias, to, to_alias, subject, message)
-  	msg = <<END_OF_MESSAGE
-From: #{from_alias} <#{from}>
-To: #{to_alias} <#{to}>
+    msg = <<MAIL
 Subject: #{subject}
-	
+From: #{from_alias} <#{from}>
+to: #{to_alias} <#{to}>
+Date: #{Time.now}
+
 #{message}
-END_OF_MESSAGE
-	
-	  Net::SMTP.start('staging.botandrose.com') do |smtp|
-		  smtp.send_message msg, from, to
-	  end
+MAIL
+    Net::SMTP.start "localhost", 25, "localhost.localdomain" do |smtp|
+      smtp.send_message msg, from, to
+    end
+
   end
 
 end
