@@ -13,6 +13,7 @@ class Voyeur < Thor
   desc "peep", "peep at all hosts"
   method_options :verbose => :boolean
   def peep
+    exit unless online?
     @@hostnames.each do |h|
       host = Host.new h
       puts "peeping #{h}..." if options.verbose?
@@ -47,9 +48,11 @@ MAIL
     Net::SMTP.start "localhost", 25, "localhost.localdomain" do |smtp|
       smtp.send_message msg, from, to
     end
-
   end
 
+  def online?
+    `ping -c1 google.com` =~ /1 packets transmitted, 1 received/
+  end
 end
 
 class Host
